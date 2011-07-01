@@ -3,7 +3,7 @@
 require 'java'
 require 'getoptlong'
 
-class HDFSFinder
+class HadoopFSFinder
   def initialize uri, opts = {}
     @opts = opts
     @conf = org.apache.hadoop.conf.Configuration.new
@@ -118,11 +118,30 @@ class HDFSFinder
       return
     end
 
+    if @opts[:human]
+      if size > 1125899906842624
+        size = "#{size / 1125899906842624}P"
+      elsif size > 1099511627776
+        size = "#{size / 1099511627776}T"
+      elsif size > 1073741824
+        size = "#{size / 1073741824}G"
+      elsif size > 1048576
+        size = "#{size / 1048576}M"
+      elsif size > 1024
+        size = "#{size / 1024}K"
+      else
+        size = "#{size}B"
+      end
+      size = '%4s' % size
+    else
+      size = '%12s' % size
+    end
+
     type = f.dir? ? 'd' : '-'
     repl = f.replication > 0 ? f.replication : '-'
     mtime = Time.at(f.modification_time / 1000).strftime '%Y-%m-%d %H:%M:%S'
     perm = f.permission.to_s.strip
-    puts '%s%s %s %-8s %-16s %12s %s %s' %
+    puts '%s%s %s %-8s %-16s %s %s %s' %
       [type, perm, repl, f.owner, f.group, size, mtime, path]
   end
 
@@ -130,25 +149,26 @@ class HDFSFinder
     @fs.glob_status(@path).each {|s| walk(s) {|f| display f}}
   end
 
-  def walk fstatus
-    yield fstatus
+  def walk fstat
+    yield fstat
 
-    return if not fstatus.dir?
+    return if not fstat.dir?
 
-    @fs.list_status(fstatus.path).each {|s| walk(s) {|f| display f}}
+    @fs.list_status(fstat.path).each {|s| walk(s) {|f| display f}}
   end
 end
 
 def usage
   puts <<-EOF
 usage: hfind [options] path
-  -h, --help
+  -H, --help
   -a, --after       # files modified after ISO date
   -b, --before      # files modified before ISO date
   -m, --mmin        # files modified before (-x) or after (+x) minutes ago
   -M, --mtime       # files modified before (-x) or after (+x) days ago
   -s, --size        # files greater (+x), less than (-x), equal to (x) size
   -l, --ls          # show full listing detail
+  -h, --human       # show human readable file sizes
   -u, --uri         # show full uri for path
 EOF
 end
@@ -165,7 +185,8 @@ gopts = GetoptLong.new(
   [ '--mtime',  '-M', GetoptLong::REQUIRED_ARGUMENT ],
   [ '--ls',     '-l', GetoptLong::NO_ARGUMENT ],
   [ '--uri',    '-u', GetoptLong::NO_ARGUMENT ],
-  [ '--help',   '-h', GetoptLong::NO_ARGUMENT ]
+  [ '--human',  '-h', GetoptLong::NO_ARGUMENT ],
+  [ '--help',   '-H', GetoptLong::NO_ARGUMENT ],
 )
 
 gopts.each do |opt, arg|
@@ -180,6 +201,8 @@ gopts.each do |opt, arg|
     opts[:mtime] = arg
   when '--size'
     opts[:size] = arg    
+  when '--human'
+    opts[:human] = true    
   when '--ls'
     opts[:ls] = true    
   when '--uri'
@@ -192,5 +215,5 @@ end
 
 uri = ARGV[0] or (usage ; exit 1)
 
-hf = HDFSFinder.new uri, opts
+hf = HadoopFSFinder.new uri, opts
 hf.find rescue STDERR.puts "error: could not process #{uri}"
