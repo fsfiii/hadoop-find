@@ -10,7 +10,7 @@ Simply copy hfind.rb and hfind into your path.
 
 # usage
 
-usage: ./hfind.rb [options] path
+usage: hfind [options] path
   -h, --help
   -a, --after       # files modified after ISO date
   -b, --before      # files modified before ISO date

@@ -141,7 +141,7 @@ end
 
 def usage
   puts <<-EOF
-usage: #$0 [options] path
+usage: hfind [options] path
   -h, --help
   -a, --after       # files modified after ISO date
   -b, --before      # files modified before ISO date
