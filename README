@@ -12,11 +12,13 @@ Simply copy hfind.rb and hfind into your path.
 
 usage: ./hfind.rb [options] path
   -h, --help
-  -a, --after       # display files modified after ISO date
-  -b, --before      # display files modified before ISO date
-  -s, --size        # display files greater (+val) or less than (-val) size
-  -l, --ls          # display full listing detail
-  -u, --uri         # display full uri for path
+  -a, --after       # files modified after ISO date
+  -b, --before      # files modified before ISO date
+  -m, --mmin        # files modified before (-x) or after (+x) minutes ago
+  -M, --mtime       # files modified before (-x) or after (+x) days ago
+  -s, --size        # files greater (+x), less than (-x), equal to (x) size
+  -l, --ls          # show full listing detail
+  -u, --uri         # show full uri for path
 
 Please let me know if you find this software useful!
 
