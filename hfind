@@ -1,0 +1,29 @@
+#!/bin/bash
+
+export PATH=/usr/local/jruby-1.6.2/bin:$PATH
+
+HFIND=${0%/*}/hfind.rb
+
+# bring in the hadoop/jdbc jars
+for f in $HADOOP_HOME/hadoop-core-*.jar; do
+  CLASSPATH=${CLASSPATH}:$f
+done
+
+for f in $HADOOP_HOME/lib/*.jar; do
+  CLASSPATH=${CLASSPATH}:$f
+done
+
+export CLASSPATH
+
+if ! type -p jruby >&/dev/null; then
+  echo error: cannot find jruby...please set your PATH >&2
+  exit 1
+fi
+
+if [ ! -f $HFIND ]; then
+  echo error: cannot find $HFIND...please install it alongside: >&2
+  echo "       $0" >&2
+  exit 2
+fi
+
+exec jruby $HFIND "$@"
