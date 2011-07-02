@@ -17,6 +17,10 @@ class HadoopFSFinder
     # convert . to the user's home directory
     uri.sub! /\A\./, "/user/#{ENV['USER']}"
 
+    if @opts[:under]
+      @opts[:repl] = "-#{@conf.get_props['dfs.replication']}"
+    end
+
     @uri  = java.net.URI.create uri
     @path = org.apache.hadoop.fs.Path.new @uri
     @fs   = org.apache.hadoop.fs.FileSystem.get @uri, @conf
@@ -202,6 +206,7 @@ usage: hfind [options] path
   -M, --mtime       # files modified before (-x) or after (+x) days ago
   -s, --size        # file size > (+x), < (-x), or == (x)
   -r, --repl        # replication factor > (+x), < (-x), or == (x)
+  -U, --under       # show under-replicated files
   -t, --type        # show type (f)ile or (d)irectory
   -l, --ls          # show full listing detail
   -h, --human       # show human readable file sizes
@@ -223,6 +228,7 @@ gopts = GetoptLong.new(
   [ '--type',   '-t', GetoptLong::REQUIRED_ARGUMENT ],
   [ '--ls',     '-l', GetoptLong::NO_ARGUMENT ],
   [ '--uri',    '-u', GetoptLong::NO_ARGUMENT ],
+  [ '--under',  '-U', GetoptLong::NO_ARGUMENT ],
   [ '--human',  '-h', GetoptLong::NO_ARGUMENT ],
   [ '--help',   '-H', GetoptLong::NO_ARGUMENT ],
 )
@@ -247,6 +253,8 @@ gopts.each do |opt, arg|
     opts[:human] = true
   when '--ls'
     opts[:ls] = true
+  when '--under'
+    opts[:under] = true
   when '--uri'
     opts[:uri] = true
   else
