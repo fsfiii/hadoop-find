@@ -76,7 +76,6 @@ class HadoopFSFinder
     return repl.send(cmp, filter_repl)
   end
 
-
   def filter_mtime mtime
     mtime_filters = [:before, :after, :mmin, :mtime]
     return true if (mtime_filters & @opts.keys).empty?
@@ -131,7 +130,6 @@ class HadoopFSFinder
     return mtime.send(cmp, filter_mtime)
   end
 
-
   # print out one line of info for a filestatus object
   def display f
     type = f.dir? ? 'd' : 'f'
@@ -151,6 +149,7 @@ class HadoopFSFinder
     else
       path = f.path.to_uri.path
     end
+    path = "#{path}/" if f.dir? 
 
     if not @opts[:ls]
       puts path
@@ -193,7 +192,7 @@ class HadoopFSFinder
 
     return if not fstat.dir?
 
-    @fs.list_status(fstat.path).each {|s| walk(s) {|f| display f}}
+    @fs.list_status(fstat.path).each {|s| walk(s) {|f| yield f}}
   end
 end
 
