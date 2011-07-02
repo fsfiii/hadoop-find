@@ -20,6 +20,7 @@ class HadoopFSFinder
     if @opts[:under]
       @opts[:repl] = "-#{@conf.get_props['dfs.replication']}"
     end
+    @opts[:type] = 'f' if @opts[:repl]
 
     @uri  = java.net.URI.create uri
     @path = org.apache.hadoop.fs.Path.new @uri
