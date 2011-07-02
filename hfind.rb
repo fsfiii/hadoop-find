@@ -6,7 +6,17 @@ require 'getoptlong'
 class HadoopFSFinder
   def initialize uri, opts = {}
     @opts = opts
+
     @conf = org.apache.hadoop.conf.Configuration.new
+    core_site = ENV['HADOOP_HOME'].to_s + '/conf/core-site.xml'
+    core_path = org.apache.hadoop.fs.Path.new core_site
+    @conf.add_resource core_path
+    hdfs_site = ENV['HADOOP_HOME'].to_s + '/conf/hdfs-site.xml'
+    hdfs_path = org.apache.hadoop.fs.Path.new hdfs_site
+    @conf.add_resource hdfs_path
+    # convert . to the user's home directory
+    uri.sub! /\A\./, "/user/#{ENV['USER']}"
+
     @uri  = java.net.URI.create uri
     @path = org.apache.hadoop.fs.Path.new @uri
     @fs   = org.apache.hadoop.fs.FileSystem.get @uri, @conf

@@ -1,8 +1,23 @@
 #!/bin/bash
 
-export PATH=/usr/local/jruby-1.6.2/bin:$PATH
+if [ -z "$HADOOP_HOME" ]; then
+  echo error: HADOOP_HOME is not defined >&2
+  exit 1
+fi
+
+export PATH=/usr/local/jruby/bin:$PATH
+if ! type -p jruby >&/dev/null; then
+  echo error: cannot find jruby...please set your PATH >&2
+  exit 1
+fi
+export JRUBY_OPTS=--1.9
 
 HFIND=${0%/*}/hfind.rb
+if [ ! -f $HFIND ]; then
+  echo error: cannot find $HFIND...please install it alongside: >&2
+  echo "       $0" >&2
+  exit 2
+fi
 
 # bring in the hadoop/jdbc jars
 for f in $HADOOP_HOME/hadoop-core-*.jar; do
@@ -14,18 +29,5 @@ for f in $HADOOP_HOME/lib/*.jar; do
 done
 
 export CLASSPATH
-
-if ! type -p jruby >&/dev/null; then
-  echo error: cannot find jruby...please set your PATH >&2
-  exit 1
-fi
-
-if [ ! -f $HFIND ]; then
-  echo error: cannot find $HFIND...please install it alongside: >&2
-  echo "       $0" >&2
-  exit 2
-fi
-
-export JRUBY_OPTS=--1.9
 
 exec jruby $HFIND "$@"
