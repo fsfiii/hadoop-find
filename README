@@ -1,6 +1,6 @@
 hfind
 
-A file listing command for HDFS filesystems similar to unix find(1).
+A file listing utility for HDFS filesystems similar to unix find(1).
 
 Requires jruby 1.6+.
 
