@@ -53,7 +53,25 @@ class HadoopFSFinder
     return size.send(cmp, filter_size)
   end
 
-  # filter by size using unix find -size numbering scheme
+  # filter by replication count using unix find -size numbering scheme
+  def filter_repl repl
+    return true if not @opts[:repl]
+
+    r = @opts[:repl]
+    cmp = :== 
+    case r[0].chr
+    when '-'
+      cmp = :<
+    when '+'
+      cmp = :>
+    end
+
+    filter_repl = r.to_i.abs
+
+    return repl.send(cmp, filter_repl)
+  end
+
+
   def filter_mtime mtime
     mtime_filters = [:before, :after, :mmin, :mtime]
     return true if (mtime_filters & @opts.keys).empty?
@@ -117,6 +135,9 @@ class HadoopFSFinder
     size = f.len
     return if not filter_size size
 
+    repl = f.replication
+    return if not filter_repl repl
+
     mtime = Time.at(f.modification_time / 1000).to_i
     return if not filter_mtime mtime
 
@@ -179,7 +200,8 @@ usage: hfind [options] path
   -b, --before      # files modified before ISO date
   -m, --mmin        # files modified before (-x) or after (+x) minutes ago
   -M, --mtime       # files modified before (-x) or after (+x) days ago
-  -s, --size        # files greater (+x), less than (-x), equal to (x) size
+  -s, --size        # file size > (+x), < (-x), or == (x)
+  -r, --repl        # replication factor > (+x), < (-x), or == (x)
   -t, --type        # show type (f)ile or (d)irectory
   -l, --ls          # show full listing detail
   -h, --human       # show human readable file sizes
@@ -193,6 +215,7 @@ opts = {}
 
 gopts = GetoptLong.new(
   [ '--size',   '-s', GetoptLong::REQUIRED_ARGUMENT ],
+  [ '--repl',   '-r', GetoptLong::REQUIRED_ARGUMENT ],
   [ '--after',  '-a', GetoptLong::REQUIRED_ARGUMENT ],
   [ '--before', '-b', GetoptLong::REQUIRED_ARGUMENT ],
   [ '--mmin',   '-m', GetoptLong::REQUIRED_ARGUMENT ],
@@ -216,6 +239,8 @@ gopts.each do |opt, arg|
     opts[:mtime] = arg
   when '--size'
     opts[:size] = arg
+  when '--repl'
+    opts[:repl] = arg
   when '--type'
     opts[:type] = arg
   when '--human'
