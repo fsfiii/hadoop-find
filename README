@@ -6,7 +6,9 @@ Requires jruby 1.6+.
 
 # installation
 
-Simply copy hfind.rb and hfind into your path.
+jgem install --no-wrapper hadoop-find
+
+Or simply copy hfind.rb and hfind into your path.
 
 # usage
 
