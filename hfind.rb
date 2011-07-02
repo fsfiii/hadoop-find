@@ -101,6 +101,9 @@ class HadoopFSFinder
 
   # print out one line of info for a filestatus object
   def display f
+    type = f.dir? ? 'd' : 'f'
+    return if @opts[:type] and @opts[:type] != type
+
     size = f.len
     return if not filter_size size
 
@@ -167,6 +170,7 @@ usage: hfind [options] path
   -m, --mmin        # files modified before (-x) or after (+x) minutes ago
   -M, --mtime       # files modified before (-x) or after (+x) days ago
   -s, --size        # files greater (+x), less than (-x), equal to (x) size
+  -t, --type        # show type (f)ile or (d)irectory
   -l, --ls          # show full listing detail
   -h, --human       # show human readable file sizes
   -u, --uri         # show full uri for path
@@ -183,6 +187,7 @@ gopts = GetoptLong.new(
   [ '--before', '-b', GetoptLong::REQUIRED_ARGUMENT ],
   [ '--mmin',   '-m', GetoptLong::REQUIRED_ARGUMENT ],
   [ '--mtime',  '-M', GetoptLong::REQUIRED_ARGUMENT ],
+  [ '--type',   '-t', GetoptLong::REQUIRED_ARGUMENT ],
   [ '--ls',     '-l', GetoptLong::NO_ARGUMENT ],
   [ '--uri',    '-u', GetoptLong::NO_ARGUMENT ],
   [ '--human',  '-h', GetoptLong::NO_ARGUMENT ],
@@ -200,13 +205,15 @@ gopts.each do |opt, arg|
   when '--mtime'
     opts[:mtime] = arg
   when '--size'
-    opts[:size] = arg    
+    opts[:size] = arg
+  when '--type'
+    opts[:type] = arg
   when '--human'
-    opts[:human] = true    
+    opts[:human] = true
   when '--ls'
-    opts[:ls] = true    
+    opts[:ls] = true
   when '--uri'
-    opts[:uri] = true    
+    opts[:uri] = true
   else
     usage
     exit 1

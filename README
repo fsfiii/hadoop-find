@@ -2,7 +2,7 @@ hfind
 
 A file listing command for HDFS filesystems similar to unix find(1).
 
-Requires jruby.
+Requires jruby 1.6+.
 
 # installation
 
@@ -11,13 +11,15 @@ Simply copy hfind.rb and hfind into your path.
 # usage
 
 usage: hfind [options] path
-  -h, --help
+  -H, --help
   -a, --after       # files modified after ISO date
   -b, --before      # files modified before ISO date
   -m, --mmin        # files modified before (-x) or after (+x) minutes ago
   -M, --mtime       # files modified before (-x) or after (+x) days ago
   -s, --size        # files greater (+x), less than (-x), equal to (x) size
+  -t, --type        # show type (f)ile or (d)irectory
   -l, --ls          # show full listing detail
+  -h, --human       # show human readable file sizes
   -u, --uri         # show full uri for path
 
 Please let me know if you find this software useful!

@@ -26,4 +26,6 @@ if [ ! -f $HFIND ]; then
   exit 2
 fi
 
+export JRUBY_OPTS=--1.9
+
 exec jruby $HFIND "$@"
