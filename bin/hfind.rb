@@ -3,6 +3,8 @@
 require 'java'
 require 'getoptlong'
 
+APP_VERSION = '0.1.1'
+
 class HadoopFSFinder
   def initialize uri, opts = {}
     @opts = opts
@@ -227,6 +229,10 @@ class HadoopFSFinder
   end
 end
 
+def version
+  puts APP_VERSION
+end
+
 def usage
   puts <<-EOF
 usage: hfind [options] path
@@ -243,6 +249,7 @@ usage: hfind [options] path
   -h, --human       # show human readable file sizes
   -D, --no-hidden   # do not show hidden files
   -u, --uri         # show full uri for path
+  -v, --version
   -H, --help
 EOF
 end
@@ -265,6 +272,7 @@ gopts = GetoptLong.new(
   [ '--under',     '-U', GetoptLong::NO_ARGUMENT ],
   [ '--human',     '-h', GetoptLong::NO_ARGUMENT ],
   [ '--no-hidden', '-D', GetoptLong::NO_ARGUMENT ],
+  [ '--version',   '-v', GetoptLong::NO_ARGUMENT ],
   [ '--help',      '-H', GetoptLong::NO_ARGUMENT ],
 )
 
@@ -296,6 +304,9 @@ gopts.each do |opt, arg|
     opts[:uri] = true
   when '--no-hidden'
     opts[:no_hidden] = true
+  when '--version'
+    version
+    exit 0
   else
     usage
     exit 1

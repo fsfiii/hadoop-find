@@ -2,6 +2,7 @@
 - new: added --no-hidden (-D) option to not display or follow hidden
   files and directories (_ for hdfs, . for unix)
 - new: added --name (-n) regular expression filter for path matching
+- new: added --version (-v) option
 
 * 2011-07-02 - fsf
 - initial import
