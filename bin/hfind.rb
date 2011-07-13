@@ -55,7 +55,7 @@ class HadoopFSFinder
     end
     filter_size = s.to_i.abs * multi
 
-    return size.send(cmp, filter_size)
+    size.send(cmp, filter_size)
   end
 
   # filter by replication count using unix find -size numbering scheme
@@ -73,7 +73,7 @@ class HadoopFSFinder
 
     filter_repl = r.to_i.abs
 
-    return repl.send(cmp, filter_repl)
+    repl.send(cmp, filter_repl)
   end
 
   def filter_mtime mtime
@@ -127,7 +127,7 @@ class HadoopFSFinder
     filter_mtime = Time.now.to_i - m.abs.to_i
 
     #puts "#{mtime} vs #{filter_mtime} #{m}"
-    return mtime.send(cmp, filter_mtime)
+    mtime.send(cmp, filter_mtime)
   end
 
   # print out one line of info for a filestatus object
@@ -150,6 +150,8 @@ class HadoopFSFinder
       path = f.path.to_uri.path
     end
     path = "#{path}/" if f.dir? 
+
+    return if not filter_path path
 
     if not @opts[:ls]
       puts path
@@ -183,11 +185,40 @@ class HadoopFSFinder
       [type, perm, repl, f.owner, f.group, size, mtime, path]
   end
 
+  # given a path string, return false if it doesn't match the provided regexp
+  def filter_path path
+    return true if not @opts[:name_re]
+
+    return false if path !~ /#{@opts[:name_re]}/
+
+    true
+  end
+
+  # prune_path
+  # - given a FileStatus, return true if a file is to be pruned (this
+  #   is the opposite behavior of filter_*)
+  # - prune_path serves a different purpose than filter_path in that 
+  #   it runs during the walk stage rather than the display stage
+  # - that means directories that fail the test will NOT be followed
+  #   and no files underneath will be processed
+  # - for now, it can only prune out hidden path names
+  def prune_path f
+    return false if not @opts[:no_hidden]
+
+    path = f.path.to_s.sub %r|\A.*/|, ''
+    hide = f.path.to_uri.scheme == 'hdfs' ? '_' : '\.'
+    return true if path =~ /\A#{hide}/
+
+    false
+  end
+
   def find
     @fs.glob_status(@path).each {|s| walk(s) {|f| display f}}
   end
 
   def walk fstat
+    return if prune_path fstat
+
     yield fstat
 
     return if not fstat.dir?
@@ -199,18 +230,20 @@ end
 def usage
   puts <<-EOF
 usage: hfind [options] path
-  -H, --help
   -a, --after       # files modified after ISO date
   -b, --before      # files modified before ISO date
   -m, --mmin        # files modified before (-x) or after (+x) minutes ago
   -M, --mtime       # files modified before (-x) or after (+x) days ago
   -s, --size        # file size > (+x), < (-x), or == (x)
+  -n, --name        # display paths matching a regular expression
   -r, --repl        # replication factor > (+x), < (-x), or == (x)
   -U, --under       # show under-replicated files
   -t, --type        # show type (f)ile or (d)irectory
   -l, --ls          # show full listing detail
   -h, --human       # show human readable file sizes
+  -D, --no-hidden   # do not show hidden files
   -u, --uri         # show full uri for path
+  -H, --help
 EOF
 end
 
@@ -219,18 +252,20 @@ end
 opts = {}
 
 gopts = GetoptLong.new(
-  [ '--size',   '-s', GetoptLong::REQUIRED_ARGUMENT ],
-  [ '--repl',   '-r', GetoptLong::REQUIRED_ARGUMENT ],
-  [ '--after',  '-a', GetoptLong::REQUIRED_ARGUMENT ],
-  [ '--before', '-b', GetoptLong::REQUIRED_ARGUMENT ],
-  [ '--mmin',   '-m', GetoptLong::REQUIRED_ARGUMENT ],
-  [ '--mtime',  '-M', GetoptLong::REQUIRED_ARGUMENT ],
-  [ '--type',   '-t', GetoptLong::REQUIRED_ARGUMENT ],
-  [ '--ls',     '-l', GetoptLong::NO_ARGUMENT ],
-  [ '--uri',    '-u', GetoptLong::NO_ARGUMENT ],
-  [ '--under',  '-U', GetoptLong::NO_ARGUMENT ],
-  [ '--human',  '-h', GetoptLong::NO_ARGUMENT ],
-  [ '--help',   '-H', GetoptLong::NO_ARGUMENT ],
+  [ '--size',      '-s', GetoptLong::REQUIRED_ARGUMENT ],
+  [ '--repl',      '-r', GetoptLong::REQUIRED_ARGUMENT ],
+  [ '--after',     '-a', GetoptLong::REQUIRED_ARGUMENT ],
+  [ '--before',    '-b', GetoptLong::REQUIRED_ARGUMENT ],
+  [ '--mmin',      '-m', GetoptLong::REQUIRED_ARGUMENT ],
+  [ '--mtime',     '-M', GetoptLong::REQUIRED_ARGUMENT ],
+  [ '--type',      '-t', GetoptLong::REQUIRED_ARGUMENT ],
+  [ '--name',      '-n', GetoptLong::REQUIRED_ARGUMENT ],
+  [ '--ls',        '-l', GetoptLong::NO_ARGUMENT ],
+  [ '--uri',       '-u', GetoptLong::NO_ARGUMENT ],
+  [ '--under',     '-U', GetoptLong::NO_ARGUMENT ],
+  [ '--human',     '-h', GetoptLong::NO_ARGUMENT ],
+  [ '--no-hidden', '-D', GetoptLong::NO_ARGUMENT ],
+  [ '--help',      '-H', GetoptLong::NO_ARGUMENT ],
 )
 
 gopts.each do |opt, arg|
@@ -249,6 +284,8 @@ gopts.each do |opt, arg|
     opts[:repl] = arg
   when '--type'
     opts[:type] = arg
+  when '--name'
+    opts[:name_re] = arg
   when '--human'
     opts[:human] = true
   when '--ls'
@@ -257,6 +294,8 @@ gopts.each do |opt, arg|
     opts[:under] = true
   when '--uri'
     opts[:uri] = true
+  when '--no-hidden'
+    opts[:no_hidden] = true
   else
     usage
     exit 1

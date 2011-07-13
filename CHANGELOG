@@ -1,2 +1,7 @@
+* 2011-07-13 - fsf
+- new: added --no-hidden (-D) option to not display or follow hidden
+  files and directories (_ for hdfs, . for unix)
+- new: added --name (-n) regular expression filter for path matching
+
 * 2011-07-02 - fsf
 - initial import

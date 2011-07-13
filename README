@@ -19,7 +19,7 @@ usage: hfind [options] path
   -M, --mtime       # files modified before (-x) or after (+x) days ago
   -s, --size        # file size > (+x), < (-x), or == (x)
   -r, --repl        # replication factor > (+x), < (-x), or == (x)
-  -U, --under       # under-replicated files
+  -U, --under       # show under-replicated files
   -t, --type        # show type (f)ile or (d)irectory
   -l, --ls          # show full listing detail
   -h, --human       # show human readable file sizes

@@ -2,8 +2,8 @@ Gem::Specification.new do |s|
   s.name = 'hadoop-find'
   s.rubyforge_project = 'hadoop-find'
   s.platform = 'java'
-  s.version = '0.0.1'
-  s.date = '2011-07-02'
+  s.version = '0.1.0'
+  s.date = '2011-07-13'
   s.authors = ["Frank Fejes"]
   s.email = 'frank@fejes.net'
   s.summary =
