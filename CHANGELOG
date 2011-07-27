@@ -1,3 +1,7 @@
+* 2011-07-27 - fsf
+- new: added --user (-u) and --group(-g) filtering options
+- change: --uri's short -u option is now -i
+
 * 2011-07-13 - fsf
 - new: added --no-hidden (-D) option to not display or follow hidden
   files and directories (_ for hdfs, . for unix)

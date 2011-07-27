@@ -3,7 +3,7 @@
 require 'java'
 require 'getoptlong'
 
-APP_VERSION = '0.1.1'
+APP_VERSION = '0.1.2'
 
 class HadoopFSFinder
   def initialize uri, opts = {}
@@ -137,6 +137,9 @@ class HadoopFSFinder
     type = f.dir? ? 'd' : 'f'
     return if @opts[:type] and @opts[:type] != type
 
+    return if @opts[:user] and @opts[:user] != f.owner
+    return if @opts[:group] and @opts[:group] != f.group
+
     size = f.len
     return if not filter_size size
 
@@ -241,14 +244,16 @@ usage: hfind [options] path
   -m, --mmin        # files modified before (-x) or after (+x) minutes ago
   -M, --mtime       # files modified before (-x) or after (+x) days ago
   -s, --size        # file size > (+x), < (-x), or == (x)
-  -n, --name        # display paths matching a regular expression
+  -u, --user        # files owned by a particular username
+  -g, --group       # files owned by a particular group
   -r, --repl        # replication factor > (+x), < (-x), or == (x)
+  -n, --name        # show paths matching a regular expression
   -U, --under       # show under-replicated files
   -t, --type        # show type (f)ile or (d)irectory
   -l, --ls          # show full listing detail
   -h, --human       # show human readable file sizes
   -D, --no-hidden   # do not show hidden files
-  -u, --uri         # show full uri for path
+  -i, --uri         # show full uri for path
   -v, --version
   -H, --help
 EOF
@@ -267,8 +272,10 @@ gopts = GetoptLong.new(
   [ '--mtime',     '-M', GetoptLong::REQUIRED_ARGUMENT ],
   [ '--type',      '-t', GetoptLong::REQUIRED_ARGUMENT ],
   [ '--name',      '-n', GetoptLong::REQUIRED_ARGUMENT ],
+  [ '--user',      '-u', GetoptLong::REQUIRED_ARGUMENT ],
+  [ '--group',     '-g', GetoptLong::REQUIRED_ARGUMENT ],
   [ '--ls',        '-l', GetoptLong::NO_ARGUMENT ],
-  [ '--uri',       '-u', GetoptLong::NO_ARGUMENT ],
+  [ '--uri',       '-i', GetoptLong::NO_ARGUMENT ],
   [ '--under',     '-U', GetoptLong::NO_ARGUMENT ],
   [ '--human',     '-h', GetoptLong::NO_ARGUMENT ],
   [ '--no-hidden', '-D', GetoptLong::NO_ARGUMENT ],
@@ -294,6 +301,10 @@ gopts.each do |opt, arg|
     opts[:type] = arg
   when '--name'
     opts[:name_re] = arg
+  when '--user'
+    opts[:user] = arg
+  when '--group'
+    opts[:group] = arg
   when '--human'
     opts[:human] = true
   when '--ls'

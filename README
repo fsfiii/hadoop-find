@@ -18,12 +18,17 @@ usage: hfind [options] path
   -m, --mmin        # files modified before (-x) or after (+x) minutes ago
   -M, --mtime       # files modified before (-x) or after (+x) days ago
   -s, --size        # file size > (+x), < (-x), or == (x)
+  -u, --user        # files owned by a particular username
+  -g, --group       # files owned by a particular group
   -r, --repl        # replication factor > (+x), < (-x), or == (x)
+  -n, --name        # show paths matching a regular expression
   -U, --under       # show under-replicated files
   -t, --type        # show type (f)ile or (d)irectory
   -l, --ls          # show full listing detail
   -h, --human       # show human readable file sizes
-  -u, --uri         # show full uri for path
+  -D, --no-hidden   # do not show hidden files
+  -i, --uri         # show full uri for path
+  -v, --version
   -H, --help
 
 Please let me know if you find this software useful!
